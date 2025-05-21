@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solicitud de Servicio - Elaboración de Mapas Temáticos</title>
+<script src="https://cdn.tailwindcss.com/3.4.16"></script>
+<script>tailwind.config={theme:{extend:{colors:{primary:'#1a5f7a',secondary:'#c17817'},borderRadius:{'none':'0px','sm':'4px',DEFAULT:'8px','md':'12px','lg':'16px','xl':'20px','2xl':'24px','3xl':'32px','full':'9999px','button':'8px'}}}}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css">
+<style>
+:where([class^="ri-"])::before { content: "\f3c2"; }
+body {
+font-family: 'Montserrat', sans-serif;
+background-color: #f9fafb;
+}
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+-webkit-appearance: none;
+margin: 0;
+}
+input[type="number"] {
+-moz-appearance: textfield;
+}
+.custom-checkbox {
+display: flex;
+align-items: center;
+cursor: pointer;
+user-select: none;
+padding: 4px;
+border-radius: 4px;
+transition: background-color 0.2s ease;
+}
+.custom-checkbox:hover {
+background-color: rgba(26, 95, 122, 0.05);
+}
+.custom-checkbox:active {
+background-color: rgba(26, 95, 122, 0.1);
+}
+.custom-checkbox input {
+position: absolute;
+opacity: 0;
+cursor: pointer;
+height: 0;
+width: 0;
+}
+.checkmark {
+height: 20px;
+width: 20px;
+background-color: #fff;
+border: 2px solid #e5e7eb;
+border-radius: 4px;
+display: flex;
+align-items: center;
+justify-content: center;
+transition: all 0.2s ease;
+flex-shrink: 0;
+}
+.custom-checkbox input:checked ~ .checkmark,
+.custom-checkbox .checkmark.checked {
+background-color: #1a5f7a;
+border-color: #1a5f7a;
+}
+.checkmark:after {
+content: "";
+display: none;
+width: 5px;
+height: 10px;
+border: solid white;
+border-width: 0 2px 2px 0;
+transform: rotate(45deg);
+}
+.custom-checkbox input:checked ~ .checkmark:after,
+.custom-checkbox .checkmark.checked:after {
+display: block;
+}
+.custom-radio {
+display: flex;
+align-items: center;
+cursor: pointer;
+}
+.custom-radio input {
+position: absolute;
+opacity: 0;
+cursor: pointer;
+height: 0;
+width: 0;
+}
+.radio-mark {
+height: 20px;
+width: 20px;
+background-color: #fff;
+border: 2px solid #e5e7eb;
+border-radius: 50%;
+display: flex;
+align-items: center;
+justify-content: center;
+transition: all 0.2s ease;
+}
+.custom-radio input:checked ~ .radio-mark {
+border-color: #1a5f7a;
+}
+.radio-mark:after {
+content: "";
+display: none;
+width: 10px;
+height: 10px;
+border-radius: 50%;
+background-color: #1a5f7a;
+}
+.custom-radio input:checked ~ .radio-mark:after {
+display: block;
+}
+.progress-step {
+position: relative;
+z-index: 1;
+}
+.progress-step::before {
+content: "";
+position: absolute;
+top: 50%;
+left: -50%;
+width: 100%;
+height: 2px;
+background-color: #e5e7eb;
+z-index: -1;
+}
+.progress-step:first-child::before {
+display: none;
+}
+.progress-step.active::before {
+background-color: #1a5f7a;
+}
+.custom-file-upload {
+border: 2px dashed #e5e7eb;
+border-radius: 8px;
+padding: 20px;
+text-align: center;
+cursor: pointer;
+transition: all 0.2s ease;
+}
+.custom-file-upload:hover {
+border-color: #1a5f7a;
+}
+.custom-file-upload input {
+display: none;
+}
+</style>
+</head>
+<body>
+<header class="bg-white shadow-sm sticky top-0 z-50">
+<div class="container mx-auto px-4 py-3 flex justify-between items-center">
+<div class="flex items-center">
+<img src="https://static.readdy.ai/image/96e5929cc978f1d5b2c6005d0965087e/453fc979e66c8b05761c20932443328b.jpeg" alt="INEMACC Logo" class="h-12 mr-3">
+<div>
+<h1 class="text-lg font-semibold text-gray-900">INGENIERÍA ESPECIALIZADA EN MEDIO AMBIENTE, CONSTRUCCIÓN Y CAPACITACIÓN</h1>
+<p class="text-xs text-gray-500">Soluciones Integrales</p>
+</div>
+</div>
+<div class="flex items-center space-x-4">
+<div class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-primary cursor-pointer">
+<i class="ri-search-line ri-lg"></i>
+</div>
+<div class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-primary cursor-pointer">
+<i class="ri-notification-3-line ri-lg"></i>
+</div>
+<div class="w-8 h-8 flex items-center justify-center bg-gray-100 rounded-full text-gray-700">
+<i class="ri-user-line ri-lg"></i>
+</div>
+</div>
+</div>
+</header>
+<div class="bg-primary/10 py-4">
+<div class="container mx-auto px-4">
+<div class="flex items-center">
+<a href="https://readdy.ai/home/9c5e8a27-b408-4899-a8a3-4414703e5990/602ae75a-691e-4976-80a0-25f64570658c" data-readdy="true" class="flex items-center text-primary hover:text-primary/80 transition">
+<i class="ri-arrow-left-line mr-2"></i>
+<span>Volver a servicios</span>
+</a>
+</div>
+</div>
+</div>
+<div class="container mx-auto px-4 py-8">
+<div class="mb-10">
+<h1 class="text-3xl font-bold text-gray-900 mb-4">Solicitud de Servicio - Elaboración de Mapas Temáticos</h1>
+<p class="text-gray-600 max-w-3xl">Complete el siguiente formulario para solicitar nuestro servicio de elaboración de mapas temáticos. Nuestro equipo especializado le contactará a la brevedad para coordinar los detalles de su proyecto.</p>
+</div>
+<div class="flex justify-between items-center mb-10 max-w-4xl">
+<div class="flex items-center w-full">
+<div class="progress-step active flex flex-col items-center">
+<div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center mb-2">
+<i class="ri-user-line"></i>
+</div>
+<span class="text-sm font-medium text-primary">Datos personales</span>
+</div>
+<div class="progress-step flex flex-col items-center flex-1">
+<div class="w-10 h-10 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center mb-2">
+<i class="ri-map-2-line"></i>
+</div>
+<span class="text-sm font-medium text-gray-500">Detalles del proyecto</span>
+</div>
+<div class="progress-step flex flex-col items-center flex-1">
+<div class="w-10 h-10 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center mb-2">
+<i class="ri-palette-line"></i>
+</div>
+<span class="text-sm font-medium text-gray-500">Personalización</span>
+</div>
+<div class="progress-step flex flex-col items-center flex-1">
+<div class="w-10 h-10 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center mb-2">
+<i class="ri-file-upload-line"></i>
+</div>
+<span class="text-sm font-medium text-gray-500">Archivos y envío</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<div class="lg:col-span-2">
+<form id="mapServiceForm" class="space-y-8" action="https://readdy.ai/api/form/d0mdhog4qeitnsusohu0" method="POST" enctype="application/x-www-form-urlencoded" data-email="walas8712@gmail.com">
+<!-- Sección 1: Datos del Solicitante -->
+<div id="section1" class="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+<h2 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+<div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center text-primary mr-2">
+<i class="ri-user-line"></i>
+</div>
+Datos del Solicitante
+</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div>
+<label for="nombre" class="block text-sm font-medium text-gray-700 mb-1">Nombre completo *</label>
+<input type="text" id="nombre" name="nombre" class="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition" placeholder="Ingrese su nombre completo" required>
+</div>
+<div>
+<label for="empresa" class="block text-sm font-medium text-gray-700 mb-1">Empresa / Organización *</label>
+<input type="text" id="empresa" name="empresa" class="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition" placeholder="Ingrese el nombre de su empresa" required>
+</div>
+<div>
+<label for="email" class="block text-sm font-medium text-gray-700 mb-1">Correo electrónico *</label>
+<input type="email" id="email" name="email" class="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition" placeholder="ejemplo@correo.com" required>
+</div>
+<div>
+<label for="telefono" class="block text-sm font-medium text-gray-700 mb-1">Teléfono de contacto *</label>
+<input type="tel" id="telefono" name="telefono" class="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition" placeholder="+51 999 999 999" required>
+</div>
+</div>
+<div class="mt-6 flex justify-end">
+<button type="button" id="nextToSection2" class="px-6 py-2 bg-primary text-white rounded-button font-medium hover:bg-primary/90 transition whitespace-nowrap flex items-center">
+Siguiente
+<i class="ri-arrow-right-line ml-2"></i>
+</button>
+</div>
+</div>
+<!-- Sección 2: Detalles del Proyecto -->
+<div id="section2" class="bg-white rounded-lg shadow-sm p-6 border border-gray-100 hidden">
+<h2 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+<div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center text-primary mr-2">
+<i class="ri-map-2-line"></i>
+</div>
+Detalles del Proyecto
+</h2>
+<div class="space-y-6">
+<div>
+<label for="tipoMapa" class="block text-sm font-medium text-gray-700 mb-1">Tipo de mapa *</label>
+<div class="relative">
+<select id="tipoMapa" name="tipoMapa" class="w-full appearance-none px-4 py-2 pr-8 border border-gray-300 rounded focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition bg-white" required>
+<option value="" disabled selected>Seleccione el tipo de mapa</option>
+<option value="topografico">Mapa Topográfico</option>
+<option value="geologico">Mapa Geológico</option>
+<option value="hidrografico">Mapa Hidrográfico</option>
+<option value="cobertura">Mapa de Cobertura Vegetal</option>
+<option value="suelos">Mapa de Suelos</option>
+<option value="riesgos">Mapa de Riesgos Ambientales</option>
+<option value="zonificacion">Mapa de Zonificación</option>
+<option value="impacto">Mapa de Impacto Ambiental</option>
+<option value="otro">Otro (especificar)</option>
+</select>
+<div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-500">
+<i class="ri-arrow-down-s-line"></i>
+</div>
+</div>
+</div>
+<div id="otroTipoMapa" class="hidden">
+<label for="otroTipo" class="block text-sm font-medium text-gray-700 mb-1">Especifique el tipo de mapa *</label>
+<input type="text" id="otroTipo" name="otroTipo" class="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition" placeholder="Describa el tipo de mapa que necesita">
+</div>
+<div>
+<label for="areaGeografica" class="block text-sm font-medium text-gray-700 mb-1">Área geográfica *</label>
+<input type="text" id="areaGeografica" name="areaGeografica" class="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition" placeholder="Ej: Distrito de San Martín de Porres, Lima" required>
+</div>
+<div>
+<label for="escala" class="block text-sm font-medium text-gray-700 mb-1">Escala del mapa *</label>
+<div class="relative">
+<select id="escala" name="escala" class="w-full appearance-none px-4 py-2 pr-8 border border-gray-300 rounded focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition bg-white" required>
+<option value="" disabled selected>Seleccione la escala</option>
+<option value="1:500">1:500 (Muy detallada)</option>
+<option value="1:1000">1:1,000</option>
+<option value="1:5000">1:5,000</option>
+<option value="1:10000">1:10,000</option>
+<option value="1:25000">1:25,000</option>
+<option value="1:50000">1:50,000</option>
+<option value="1:100000">1:100,000</option>
+<option value="otro">Otra (especificar)</option>
+</select>
+<div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-500">
+<i class="ri-arrow-down-s-line"></i>
+</div>
+</div>
+</div>
+<div id="otraEscala" class="hidden">
+<label for="otraEscalaInput" class="block text-sm font-medium text-gray-700 mb-1">Especifique la escala *</label>
+<input type="text" id="otraEscalaInput" name="otraEscalaInput" class="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition" placeholder="Ej: 1:75,000">
+</div>
+<div>
+<label for="proposito" class="block text-sm font-medium text-gray-700 mb-1">Propósito del mapa *</label>
+<textarea id="proposito" name="proposito" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition" placeholder="Describa el propósito y uso que dará al mapa temático" required></textarea>
+</div>
+</div>
+<div class="mt-6 flex justify-between">
+<button type="button" id="backToSection1" class="px-6 py-2 border border-gray-300 text-gray-700 rounded-button font-medium hover:bg-gray-50 transition whitespace-nowrap flex items-center">
+<i class="ri-arrow-left-line mr-2"></i>
+Anterior
+</button>
+<button type="button" id="nextToSection3" class="px-6 py-2 bg-primary text-white rounded-button font-medium hover:bg-primary/90 transition whitespace-nowrap flex items-center">
+Siguiente
+<i class="ri-arrow-right-line ml-2"></i>
+</button>
+</div>
+</div>
+<!-- Sección 3: Opciones de Personalización -->
+<div id="section3" class="bg-white rounded-lg shadow-sm p-6 border border-gray-100 hidden">
+<h2 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+<div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center text-primary mr-2">
+<i class="ri-palette-line"></i>
+</div>
+Opciones de Personalización
+</h2>
+<div class="space-y-6">
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-3">Elementos cartográficos a incluir</label>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+<label class="custom-checkbox flex items-center">
+<input type="checkbox" name="elementos" value="leyenda">
+<span class="checkmark mr-2"></span>
+<span class="text-sm text-gray-700">Leyenda detallada</span>
+</label>
+<label class="custom-checkbox flex items-center">
+<input type="checkbox" name="elementos" value="escala_grafica">
+<span class="checkmark mr-2"></span>
+<span class="text-sm text-gray-700">Escala gráfica</span>
+</label>
+<label class="custom-checkbox flex items-center">
+<input type="checkbox" name="elementos" value="rosa_vientos">
+<span class="checkmark mr-2"></span>
+<span class="text-sm text-gray-700">Rosa de los vientos</span>
+</label>
+<label class="custom-checkbox flex items-center">
+<input type="checkbox" name="elementos" value="coordenadas">
+<span class="checkmark mr-2"></span>
+<span class="text-sm text-gray-700">Coordenadas geográficas</span>
+</label>
+<label class="custom-checkbox flex items-center">
+<input type="checkbox" name="elementos" value="cuadricula">
+<span class="checkmark mr-2"></span>
+<span class="text-sm text-gray-700">Cuadrícula de referencia</span>
+</label>
+<label class="custom-checkbox flex items-center">
+<input type="checkbox" name="elementos" value="cajetin">
+<span class="checkmark mr-2"></span>
+<span class="text-sm text-gray-700">Cajetín con información del proyecto</span>
+</label>
+<label class="custom-checkbox flex items-center">
+<input type="checkbox" name="elementos" value="logos">
+<span class="checkmark mr-2"></span>
+<span class="text-sm text-gray-700">Logos institucionales</span>
+</label>
+<label class="custom-checkbox flex items-center">
+<input type="checkbox" name="elementos" value="mapa_ubicacion">
+<span class="checkmark mr-2"></span>
+<span class="text-sm text-gray-700">Mapa de ubicación</span>
+</label>
+</div>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-3">Paleta de colores</label>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+<label class="custom-radio flex items-center">
+<input type="radio" name="paleta" value="estandar" checked>
+<span class="radio-mark mr-2"></span>
+<span class="text-sm text-gray-700">Estándar (colores convencionales)</span>
+</label>
+<label class="custom-radio flex items-center">
+<input type="radio" name="paleta" value="personalizada">
+<span class="radio-mark mr-2"></span>
+<span class="text-sm text-gray-700">Personalizada (según manual de identidad)</span>
+</label>
+<label class="custom-radio flex items-center">
+<input type="radio" name="paleta" value="monocromatica">
+<span class="radio-mark mr-2"></span>
+<span class="text-sm text-gray-700">Monocromática</span>
+</label>
+<label class="custom-radio flex items-center">
+<input type="radio" name="paleta" value="alto_contraste">
+<span class="radio-mark mr-2"></span>
+<span class="text-sm text-gray-700">Alto contraste</span>
+</label>
+</div>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-3">Formato de entrega</label>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+<label class="custom-checkbox flex items-center">
+<input type="checkbox" name="formato" value="pdf">
+<span class="checkmark mr-2"></span>
+<span class="text-sm text-gray-700">PDF de alta resolución</span>
+</label>
+<label class="custom-checkbox flex items-center">
+<input type="checkbox" name="formato" value="jpg">
+<span class="checkmark mr-2"></span>
+<span class="text-sm text-gray-700">JPG / PNG</span>
+</label>
+<label class="custom-checkbox flex items-center">
+<input type="checkbox" name="formato" value="gis">
+<span class="checkmark mr-2"></span>
+<span class="text-sm text-gray-700">Archivos GIS (shapefiles, geodatabase)</span>
+</label>
+<label class="custom-checkbox flex items-center">
+<input type="checkbox" name="formato" value="cad">
+<span class="checkmark mr-2"></span>
+<span class="text-sm text-gray-700">Archivo CAD (DWG, DXF)</span>
+</label>
+<label class="custom-checkbox flex items-center">
+<input type="checkbox" name="formato" value="impreso">
+<span class="checkmark mr-2"></span>
+<span class="text-sm text-gray-700">Impresión en papel (especificar tamaño)</span>
+</label>
+</div>
+</div>
+<div id="tamanoImpresion" class="hidden">
+<label for="tamanoImpresionSelect" class="block text-sm font-medium text-gray-700 mb-1">Tamaño de impresión</label>
+<div class="relative">
+<select id="tamanoImpresionSelect" name="tamanoImpresion" class="w-full appearance-none px-4 py-2 pr-8 border border-gray-300 rounded focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition bg-white">
+<option value="" disabled selected>Seleccione el tamaño</option>
+<option value="A4">A4 (21 x 29.7 cm)</option>
+<option value="A3">A3 (29.7 x 42 cm)</option>
+<option value="A2">A2 (42 x 59.4 cm)</option>
+<option value="A1">A1 (59.4 x 84.1 cm)</option>
+<option value="A0">A0 (84.1 x 118.9 cm)</option>
+<option value="otro">Otro (especificar)</option>
+</select>
+<div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-500">
+<i class="ri-arrow-down-s-line"></i>
+</div>
+</div>
+</div>
+<div id="otroTamanoImpresion" class="hidden">
+<label for="otroTamanoInput" class="block text-sm font-medium text-gray-700 mb-1">Especifique el tamaño</label>
+<input type="text" id="otroTamanoInput" name="otroTamanoInput" class="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition" placeholder="Ej: 100 x 150 cm">
+</div>
+</div>
+<div class="mt-6 flex justify-between">
+<button type="button" id="backToSection2" class="px-6 py-2 border border-gray-300 text-gray-700 rounded-button font-medium hover:bg-gray-50 transition whitespace-nowrap flex items-center">
+<i class="ri-arrow-left-line mr-2"></i>
+Anterior
+</button>
+<button type="button" id="nextToSection4" class="px-6 py-2 bg-primary text-white rounded-button font-medium hover:bg-primary/90 transition whitespace-nowrap flex items-center">
+Siguiente
+<i class="ri-arrow-right-line ml-2"></i>
+</button>
+</div>
+</div>
+<!-- Sección 4: Plazos, Presupuesto y Archivos -->
+<div id="section4" class="bg-white rounded-lg shadow-sm p-6 border border-gray-100 hidden">
+<h2 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+<div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center text-primary mr-2">
+<i class="ri-file-upload-line"></i>
+</div>
+Plazos, Presupuesto y Archivos
+</h2>
+<div class="space-y-6">
+<div>
+<label for="fechaEntrega" class="block text-sm font-medium text-gray-700 mb-1">Fecha requerida de entrega *</label>
+<input type="date" id="fechaEntrega" name="fechaEntrega" class="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition" required min="">
+</div>
+<div>
+<label for="presupuesto" class="block text-sm font-medium text-gray-700 mb-1">Presupuesto estimado (S/)</label>
+<input type="number" id="presupuesto" name="presupuesto" class="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition" placeholder="Ingrese su presupuesto estimado">
+<p class="text-xs text-gray-500 mt-1">Deje en blanco si desea recibir una cotización personalizada.</p>
+</div>
+<div>
+<label class="block text-sm font-medium text-gray-700 mb-3">Archivos de referencia</label>
+<label class="custom-file-upload flex flex-col items-center justify-center">
+<input type="file" id="archivos" name="archivos" multiple>
+<i class="ri-upload-cloud-2-line text-primary text-3xl mb-2"></i>
+<p class="text-gray-700 font-medium">Arrastre y suelte archivos aquí</p>
+<p class="text-sm text-gray-500">o haga clic para seleccionar archivos</p>
+<p class="text-xs text-gray-500 mt-2">Formatos aceptados: SHP, KML, KMZ, DWG, DXF, GeoTIFF, JPG, PDF (máx. 20MB)</p>
+</label>
+<div id="fileList" class="mt-4 space-y-2"></div>
+</div>
+<div>
+<label for="comentarios" class="block text-sm font-medium text-gray-700 mb-1">Comentarios adicionales</label>
+<textarea id="comentarios" name="comentarios" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition" placeholder="Información adicional relevante para el proyecto"></textarea>
+</div>
+</div>
+<div class="mt-6 flex justify-between">
+<button type="button" id="backToSection3" class="px-6 py-2 border border-gray-300 text-gray-700 rounded-button font-medium hover:bg-gray-50 transition whitespace-nowrap flex items-center">
+<i class="ri-arrow-left-line mr-2"></i>
+Anterior
+</button>
+<div class="flex space-x-3">
+<button type="button" id="saveAsDraft" class="px-6 py-2 border border-primary text-primary rounded-button font-medium hover:bg-primary/10 transition whitespace-nowrap">
+Guardar como borrador
+</button>
+<button type="submit" class="px-6 py-2 bg-primary text-white rounded-button font-medium hover:bg-primary/90 transition whitespace-nowrap flex items-center">
+Enviar solicitud
+<i class="ri-send-plane-line ml-2"></i>
+</button>
+</div>
+</div>
+</div>
+</form>
+</div>
+<div class="lg:col-span-1">
+<div class="sticky top-24 space-y-6">
+<div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+<h3 class="text-lg font-semibold text-gray-900 mb-4">Información del Servicio</h3>
+<div class="space-y-4">
+<div>
+<h4 class="text-sm font-medium text-gray-700 mb-2">Elaboración de Mapas Temáticos</h4>
+<p class="text-sm text-gray-600">Desarrollo de cartografía especializada y mapas temáticos para estudios ambientales, análisis territorial y planificación de proyectos.</p>
+</div>
+<div>
+<h4 class="text-sm font-medium text-gray-700 mb-2">Tiempo estimado de respuesta</h4>
+<p class="text-sm text-gray-600">24-48 horas hábiles</p>
+</div>
+<div>
+<h4 class="text-sm font-medium text-gray-700 mb-2">Tiempo de elaboración</h4>
+<p class="text-sm text-gray-600">5-15 días hábiles (dependiendo de la complejidad)</p>
+</div>
+</div>
+</div>
+<div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+<h3 class="text-lg font-semibold text-gray-900 mb-4">Ejemplos de Mapas</h3>
+<div class="space-y-3">
+<div class="rounded-lg overflow-hidden">
+<img src="https://readdy.ai/api/search-image?query=Professional%2520thematic%2520map%2520showing%2520environmental%2520impact%2520assessment%2520with%2520detailed%2520legend%252C%2520scale%2520bar%252C%2520and%2520geographic%2520coordinates.%2520High-quality%2520cartography%2520with%2520clear%2520color%2520coding%2520for%2520different%2520zones%2520and%2520environmental%2520features.%2520Clean%2520professional%2520design%2520suitable%2520for%2520technical%2520reports&width=600&height=400&seq=1&orientation=landscape" alt="Mapa temático de impacto ambiental" class="w-full h-auto">
+<p class="text-xs text-gray-500 mt-1">Mapa de impacto ambiental para proyecto minero</p>
+</div>
+<div class="rounded-lg overflow-hidden">
+<img src="https://readdy.ai/api/search-image?query=Professional%2520topographic%2520map%2520with%2520contour%2520lines%252C%2520elevation%2520data%252C%2520and%2520watershed%2520boundaries.%2520High-quality%2520cartography%2520with%2520clear%2520labels%2520for%2520geographic%2520features.%2520Clean%2520professional%2520design%2520with%2520complete%2520legend%2520and%2520scale%2520bar&width=600&height=400&seq=2&orientation=landscape" alt="Mapa topográfico" class="w-full h-auto">
+<p class="text-xs text-gray-500 mt-1">Mapa topográfico con curvas de nivel</p>
+</div>
+<div class="rounded-lg overflow-hidden">
+<img src="https://readdy.ai/api/search-image?query=Professional%2520land%2520use%2520zoning%2520map%2520with%2520different%2520colored%2520areas%2520representing%2520various%2520land%2520use%2520categories.%2520High-quality%2520cartography%2520with%2520clear%2520boundaries%2520and%2520labels.%2520Clean%2520professional%2520design%2520with%2520detailed%2520legend%2520showing%2520residential%252C%2520commercial%252C%2520industrial%252C%2520and%2520protected%2520areas&width=600&height=400&seq=3&orientation=landscape" alt="Mapa de zonificación" class="w-full h-auto">
+<p class="text-xs text-gray-500 mt-1">Mapa de zonificación territorial</p>
+</div>
+</div>
+</div>
+<div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+<h3 class="text-lg font-semibold text-gray-900 mb-4">Contacto Directo</h3>
+<div class="space-y-3">
+<div class="flex items-center">
+<div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary mr-3">
+<i class="ri-phone-line"></i>
+</div>
+<div>
+<p class="text-sm font-medium text-gray-700">Teléfono</p>
+<a href="tel:+51956298271" class="text-sm text-primary hover:underline">+51 956 298 271</a>
+</div>
+</div>
+<div class="flex items-center">
+<div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary mr-3">
+<i class="ri-mail-line"></i>
+</div>
+<div>
+<p class="text-sm font-medium text-gray-700">Correo</p>
+<a href="mailto:Walas8712@gmail.com" class="text-sm text-primary hover:underline">Walas8712@gmail.com</a>
+</div>
+</div>
+<div class="flex items-center">
+<div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary mr-3">
+<i class="ri-whatsapp-line"></i>
+</div>
+<div>
+<p class="text-sm font-medium text-gray-700">WhatsApp</p>
+<a href="https://wa.me/51956298271" target="_blank" class="text-sm text-primary hover:underline">Enviar mensaje</a>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<footer class="bg-gray-900 text-white mt-12">
+<div class="container mx-auto px-4 py-12">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<div>
+<div class="flex items-center mb-6">
+<img src="https://static.readdy.ai/image/96e5929cc978f1d5b2c6005d0965087e/453fc979e66c8b05761c20932443328b.jpeg" alt="INEMACC Logo" class="h-10 mr-3">
+<div>
+<h3 class="text-lg font-semibold">INGENIERÍA AMBIENTAL</h3>
+<p class="text-xs text-gray-400">Soluciones Sostenibles</p>
+</div>
+</div>
+<p class="text-sm text-gray-400 mb-6">Comprometidos con el desarrollo sostenible a través de soluciones innovadoras en ingeniería ambiental, construcción y formación profesional especializada.</p>
+<div class="flex space-x-4">
+<a href="#" class="text-gray-400 hover:text-white">
+<i class="ri-facebook-fill ri-lg"></i>
+</a>
+<a href="#" class="text-gray-400 hover:text-white">
+<i class="ri-twitter-fill ri-lg"></i>
+</a>
+<a href="#" class="text-gray-400 hover:text-white">
+<i class="ri-youtube-fill ri-lg"></i>
+</a>
+<a href="#" class="text-gray-400 hover:text-white">
+<i class="ri-instagram-fill ri-lg"></i>
+</a>
+</div>
+</div>
+<div>
+<h3 class="text-lg font-semibold mb-6">Contacto</h3>
+<ul class="space-y-4 text-sm text-gray-400">
+<li class="flex items-start">
+<i class="ri-map-pin-line mr-3 mt-1"></i>
+<span>Cooperativa Virgen de Fátima L-16, San Martin de Porres, Perú</span>
+</li>
+<li class="flex items-center">
+<i class="ri-mail-line mr-3"></i>
+<span>Walas8712@gmail.com</span>
+</li>
+<li class="flex items-center">
+<i class="ri-time-line mr-3"></i>
+<span>Lun - Vie: 8:30 AM - 5:30 PM</span>
+</li>
+<li class="flex items-center">
+<i class="ri-whatsapp-fill mr-3"></i>
+<a href="https://wa.me/51956298271" target="_blank" class="hover:text-white transition-colors">+51 956 298 271</a>
+</li>
+</ul>
+</div>
+</div>
+<div class="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
+<p class="text-sm text-gray-500 mb-4 md:mb-0">© 2025 INGENIERÍA ESPECIALIZADA EN MEDIO AMBIENTE, CONSTRUCCIÓN Y CAPACITACIÓN - Todos los derechos reservados</p>
+<div class="flex flex-wrap justify-center gap-6">
+<a href="#" class="text-xs text-gray-500 hover:text-gray-400">Términos y Condiciones</a>
+<a href="#" class="text-xs text-gray-500 hover:text-gray-400">Política de Privacidad</a>
+<a href="#" class="text-xs text-gray-500 hover:text-gray-400">Mapa del Sitio</a>
+<a href="#" class="text-xs text-gray-500 hover:text-gray-400">Accesibilidad</a>
+</div>
+</div>
+</div>
+</footer>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+// Set minimum date for delivery date input (tomorrow)
+const tomorrow = new Date();
+tomorrow.setDate(tomorrow.getDate() + 1);
+document.getElementById('fechaEntrega').min = tomorrow.toISOString().split('T')[0];
+// Enhance checkbox interaction
+document.getElementById('mapServiceForm').addEventListener('click', function(e) {
+const target = e.target;
+// Check if clicked element is a checkmark or part of custom-checkbox
+if (target.classList.contains('checkmark') || (!target.type && target.closest('.custom-checkbox'))) {
+const checkbox = target.closest('.custom-checkbox');
+if (checkbox) {
+const input = checkbox.querySelector('input[type="checkbox"]');
+const checkmark = checkbox.querySelector('.checkmark');
+if (input && checkmark) {
+// Toggle checked state
+input.checked = !input.checked;
+// Update visual state
+if (input.checked) {
+checkmark.classList.add('checked');
+} else {
+checkmark.classList.remove('checked');
+}
+// Trigger change event
+const event = new Event('change', { bubbles: true });
+input.dispatchEvent(event);
+}
+}
+}
+});
+// Initialize checkmark states
+document.querySelectorAll('.custom-checkbox').forEach(function(checkbox) {
+const input = checkbox.querySelector('input[type="checkbox"]');
+const checkmark = checkbox.querySelector('.checkmark');
+if (input && checkmark && input.checked) {
+checkmark.classList.add('checked');
+}
+});
+// Navigation between sections
+document.getElementById('nextToSection2').addEventListener('click', function() {
+document.getElementById('section1').classList.add('hidden');
+document.getElementById('section2').classList.remove('hidden');
+// Update progress steps
+document.querySelectorAll('.progress-step')[0].classList.add('active');
+document.querySelectorAll('.progress-step')[1].classList.add('active');
+document.querySelectorAll('.progress-step')[1].querySelector('div').classList.remove('bg-gray-200', 'text-gray-500');
+document.querySelectorAll('.progress-step')[1].querySelector('div').classList.add('bg-primary', 'text-white');
+document.querySelectorAll('.progress-step')[1].querySelector('span').classList.remove('text-gray-500');
+document.querySelectorAll('.progress-step')[1].querySelector('span').classList.add('text-primary');
+window.scrollTo(0, 0);
+});
+document.getElementById('backToSection1').addEventListener('click', function() {
+document.getElementById('section2').classList.add('hidden');
+document.getElementById('section1').classList.remove('hidden');
+// Update progress steps
+document.querySelectorAll('.progress-step')[1].classList.remove('active');
+document.querySelectorAll('.progress-step')[1].querySelector('div').classList.add('bg-gray-200', 'text-gray-500');
+document.querySelectorAll('.progress-step')[1].querySelector('div').classList.remove('bg-primary', 'text-white');
+document.querySelectorAll('.progress-step')[1].querySelector('span').classList.add('text-gray-500');
+document.querySelectorAll('.progress-step')[1].querySelector('span').classList.remove('text-primary');
+window.scrollTo(0, 0);
+});
+document.getElementById('nextToSection3').addEventListener('click', function() {
+document.getElementById('section2').classList.add('hidden');
+document.getElementById('section3').classList.remove('hidden');
+// Update progress steps
+document.querySelectorAll('.progress-step')[2].classList.add('active');
+document.querySelectorAll('.progress-step')[2].querySelector('div').classList.remove('bg-gray-200', 'text-gray-500');
+document.querySelectorAll('.progress-step')[2].querySelector('div').classList.add('bg-primary', 'text-white');
+document.querySelectorAll('.progress-step')[2].querySelector('span').classList.remove('text-gray-500');
+document.querySelectorAll('.progress-step')[2].querySelector('span').classList.add('text-primary');
+window.scrollTo(0, 0);
+});
+document.getElementById('backToSection2').addEventListener('click', function() {
+document.getElementById('section3').classList.add('hidden');
+document.getElementById('section2').classList.remove('hidden');
+// Update progress steps
+document.querySelectorAll('.progress-step')[2].classList.remove('active');
+document.querySelectorAll('.progress-step')[2].querySelector('div').classList.add('bg-gray-200', 'text-gray-500');
+document.querySelectorAll('.progress-step')[2].querySelector('div').classList.remove('bg-primary', 'text-white');
+document.querySelectorAll('.progress-step')[2].querySelector('span').classList.add('text-gray-500');
+document.querySelectorAll('.progress-step')[2].querySelector('span').classList.remove('text-primary');
+window.scrollTo(0, 0);
+});
+document.getElementById('nextToSection4').addEventListener('click', function() {
+document.getElementById('section3').classList.add('hidden');
+document.getElementById('section4').classList.remove('hidden');
+// Update progress steps
+document.querySelectorAll('.progress-step')[3].classList.add('active');
+document.querySelectorAll('.progress-step')[3].querySelector('div').classList.remove('bg-gray-200', 'text-gray-500');
+document.querySelectorAll('.progress-step')[3].querySelector('div').classList.add('bg-primary', 'text-white');
+document.querySelectorAll('.progress-step')[3].querySelector('span').classList.remove('text-gray-500');
+document.querySelectorAll('.progress-step')[3].querySelector('span').classList.add('text-primary');
+window.scrollTo(0, 0);
+});
+document.getElementById('backToSection3').addEventListener('click', function() {
+document.getElementById('section4').classList.add('hidden');
+document.getElementById('section3').classList.remove('hidden');
+// Update progress steps
+document.querySelectorAll('.progress-step')[3].classList.remove('active');
+document.querySelectorAll('.progress-step')[3].querySelector('div').classList.add('bg-gray-200', 'text-gray-500');
+document.querySelectorAll('.progress-step')[3].querySelector('div').classList.remove('bg-primary', 'text-white');
+document.querySelectorAll('.progress-step')[3].querySelector('span').classList.add('text-gray-500');
+document.querySelectorAll('.progress-step')[3].querySelector('span').classList.remove('text-primary');
+window.scrollTo(0, 0);
+});
+// Show/hide "Otro tipo de mapa" field
+document.getElementById('tipoMapa').addEventListener('change', function() {
+if (this.value === 'otro') {
+document.getElementById('otroTipoMapa').classList.remove('hidden');
+} else {
+document.getElementById('otroTipoMapa').classList.add('hidden');
+}
+});
+// Show/hide "Otra escala" field
+document.getElementById('escala').addEventListener('change', function() {
+if (this.value === 'otro') {
+document.getElementById('otraEscala').classList.remove('hidden');
+} else {
+document.getElementById('otraEscala').classList.add('hidden');
+}
+});
+// Show/hide "Tamaño de impresión" field
+const formatoCheckboxes = document.querySelectorAll('input[name="formato"]');
+formatoCheckboxes.forEach(function(checkbox) {
+checkbox.addEventListener('change', function() {
+if (checkbox.value === 'impreso' && checkbox.checked) {
+document.getElementById('tamanoImpresion').classList.remove('hidden');
+} else if (checkbox.value === 'impreso' && !checkbox.checked) {
+document.getElementById('tamanoImpresion').classList.add('hidden');
+document.getElementById('otroTamanoImpresion').classList.add('hidden');
+}
+});
+});
+// Show/hide "Otro tamaño de impresión" field
+document.getElementById('tamanoImpresionSelect').addEventListener('change', function() {
+if (this.value === 'otro') {
+document.getElementById('otroTamanoImpresion').classList.remove('hidden');
+} else {
+document.getElementById('otroTamanoImpresion').classList.add('hidden');
+}
+});
+// File upload handling
+document.getElementById('archivos').addEventListener('change', function(e) {
+const fileList = document.getElementById('fileList');
+fileList.innerHTML = '';
+for (let i = 0; i < this.files.length; i++) {
+const file = this.files[i];
+const fileSize = (file.size / 1024 / 1024).toFixed(2); // Convert to MB
+const fileItem = document.createElement('div');
+fileItem.className = 'flex items-center justify-between bg-gray-50 p-2 rounded';
+const fileInfo = document.createElement('div');
+fileInfo.className = 'flex items-center';
+const fileIcon = document.createElement('div');
+fileIcon.className = 'w-8 h-8 flex items-center justify-center text-primary mr-2';
+fileIcon.innerHTML = '<i class="ri-file-line ri-lg"></i>';
+const fileName = document.createElement('div');
+fileName.className = 'text-sm';
+fileName.innerHTML = `
+<p class="font-medium text-gray-700">${file.name}</p>
+<p class="text-xs text-gray-500">${fileSize} MB</p>
+`;
+const removeButton = document.createElement('button');
+removeButton.type = 'button';
+removeButton.className = 'text-gray-500 hover:text-red-500';
+removeButton.innerHTML = '<i class="ri-close-line"></i>';
+removeButton.addEventListener('click', function() {
+fileItem.remove();
+});
+fileInfo.appendChild(fileIcon);
+fileInfo.appendChild(fileName);
+fileItem.appendChild(fileInfo);
+fileItem.appendChild(removeButton);
+fileList.appendChild(fileItem);
+}
+});
+// Form submission
+document.getElementById('mapServiceForm').addEventListener('submit', function(e) {
+e.preventDefault();
+// Validate required fields
+const requiredFields = ['nombre', 'empresa', 'email', 'telefono', 'tipoMapa', 'areaGeografica', 'escala', 'proposito', 'fechaEntrega'];
+let isValid = true;
+requiredFields.forEach(field => {
+const element = document.getElementById(field);
+if (!element.value.trim()) {
+element.classList.add('border-red-500');
+isValid = false;
+} else {
+element.classList.remove('border-red-500');
+}
+});
+if (!isValid) {
+const notification = document.createElement('div');
+notification.className = 'fixed top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded';
+notification.innerHTML = `
+<div class="flex items-center">
+<i class="ri-error-warning-line mr-2"></i>
+<span>Por favor complete todos los campos requeridos</span>
+</div>
+`;
+document.body.appendChild(notification);
+setTimeout(() => notification.remove(), 3000);
+return;
+}
+// Get form data
+const formData = new FormData(this);
+// Handle checkboxes
+const elementos = [];
+document.querySelectorAll('input[name="elementos"]:checked').forEach(checkbox => {
+elementos.push(checkbox.value);
+});
+formData.set('elementos', elementos.join(','));
+const formato = [];
+document.querySelectorAll('input[name="formato"]:checked').forEach(checkbox => {
+formato.push(checkbox.value);
+});
+formData.set('formato', formato.join(','));
+// Convert FormData to URL-encoded string
+const data = new URLSearchParams(formData);
+// Submit form
+const recipientEmail = this.getAttribute('data-email');
+data.append('recipient_email', recipientEmail);
+
+fetch(this.action, {
+method: 'POST',
+headers: {
+'Content-Type': 'application/x-www-form-urlencoded',
+},
+body: data
+})
+.then(response => {
+if (!response.ok) {
+throw new Error('Network response was not ok');
+}
+// Show success message
+const notification = document.createElement('div');
+notification.className = 'fixed top-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded';
+notification.innerHTML = `
+<div class="flex items-center">
+<i class="ri-checkbox-circle-line mr-2"></i>
+<span>¡Solicitud enviada con éxito! Nos pondremos en contacto con usted a la brevedad.</span>
+</div>
+`;
+document.body.appendChild(notification);
+setTimeout(() => notification.remove(), 3000);
+// Reset form
+this.reset();
+// Reset custom UI states
+document.querySelectorAll('.checkmark').forEach(checkmark => {
+checkmark.classList.remove('checked');
+});
+// Hide conditional fields
+['otroTipoMapa', 'otraEscala', 'tamanoImpresion', 'otroTamanoImpresion'].forEach(id => {
+document.getElementById(id).classList.add('hidden');
+});
+// Clear file list
+document.getElementById('fileList').innerHTML = '';
+// Reset progress steps
+document.querySelectorAll('.progress-step').forEach((step, index) => {
+if (index > 0) {
+step.classList.remove('active');
+step.querySelector('div').classList.add('bg-gray-200', 'text-gray-500');
+step.querySelector('div').classList.remove('bg-primary', 'text-white');
+step.querySelector('span').classList.add('text-gray-500');
+step.querySelector('span').classList.remove('text-primary');
+}
+});
+// Show first section
+document.querySelectorAll('[id^="section"]').forEach((section, index) => {
+section.classList.toggle('hidden', index !== 0);
+});
+// Scroll to top
+window.scrollTo(0, 0);
+})
+.catch(error => {
+const notification = document.createElement('div');
+notification.className = 'fixed top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded';
+notification.innerHTML = `
+<div class="flex items-center">
+<i class="ri-error-warning-line mr-2"></i>
+<span>Error al enviar el formulario. Por favor intente nuevamente.</span>
+</div>
+`;
+document.body.appendChild(notification);
+setTimeout(() => notification.remove(), 3000);
+});
+});
+// Save as draft
+document.getElementById('saveAsDraft').addEventListener('click', function() {
+alert('Borrador guardado correctamente. Puede continuar más tarde.');
+});
+});
+</script>
+</body>
+</html>
